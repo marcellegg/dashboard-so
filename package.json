@@ -1,0 +1,13 @@
+{
+  "name": "so-dashboard",
+  "version": "2.0.0",
+  "description": "Dashboard completo de monitoramento do Sistema Operacional",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}
