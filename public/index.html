@@ -12,6 +12,7 @@
             --text-muted: #a0a0a0;
             --accent-green: #00e676;
             --accent-blue: #29b6f6;
+            --accent-red: #ff5252;
             --border-color: #333333;
         }
 
@@ -77,6 +78,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
+            margin-bottom: 20px;
         }
 
         .card {
@@ -116,6 +118,83 @@
             color: var(--accent-green) !important;
             font-weight: bold;
         }
+
+        /* ESTILOS DO SIMULADOR (NOVO) */
+        .simulator-card {
+            grid-column: 1 / -1; /* Ocupa toda a largura */
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .ram-bar-container {
+            background: #333;
+            height: 30px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .ram-bar-fill {
+            background: var(--accent-blue);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .ram-bar-fill.danger {
+            background: var(--accent-red);
+        }
+
+        .ram-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px #000;
+            color: white;
+            pointer-events: none;
+        }
+
+        .sim-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-sim {
+            background: var(--accent-green);
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-sim:hover { opacity: 0.8; }
+        .btn-kill { background: var(--accent-red); color: white; }
+
+        .process-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .process-item {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            border-left: 3px solid var(--text-muted);
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -152,7 +231,7 @@
         </div>
 
         <div class="card">
-            <h2>🧠 Memória RAM</h2>
+            <h2>🧠 Memória Física</h2>
             <div class="info-row"><span>Total:</span> <span id="mem-total">...</span></div>
             <div class="info-row"><span>Usada:</span> <span id="mem-usada">...</span></div>
             <div class="info-row"><span>Livre:</span> <span id="mem-livre">...</span></div>
@@ -167,75 +246,18 @@
         </div>
 
         <div class="card">
-            <h2>🌐 Rede & IO</h2>
-            <div class="info-row"><span>IP Principal:</span> <span id="net-ip">...</span></div>
-            <div class="info-row"><span>Interfaces Ativas:</span> <span id="net-ifaces">...</span></div>
-            <div class="info-row"><span>Arquivos no Dir:</span> <span id="io-arquivos">...</span></div>
-        </div>
-
-        <div class="card">
             <h2>📦 Ambiente da Aplicação</h2>
+            <div class="info-row"><span>IP Principal:</span> <span id="net-ip">...</span></div>
             <div class="info-row"><span>PID do Processo:</span> <span id="app-pid">...</span></div>
             <div class="info-row"><span>Versão Node:</span> <span id="app-node">...</span></div>
             <div class="info-row"><span>Porta de Rede:</span> <span id="app-port">...</span></div>
             <div class="info-row"><span>Diretório:</span> <span id="app-dir">...</span></div>
-            <div class="info-row"><span>Usuário do SO:</span> <span id="app-user">...</span></div>
         </div>
-    </div>
 
-    <script>
-        async function buscarDadosSO() {
-            try {
-                const response = await fetch('/api/sysinfo');
-                const data = await response.json();
-
-                // Atualiza Header
-                document.getElementById('top-status').innerText = data.aplicacao.status.toUpperCase();
-                document.getElementById('top-ram').innerText = `${data.memoria.usoPercent}%`;
-                document.getElementById('top-uptime').innerText = data.tempo.uptimeFormatado;
-
-                // Atualiza Sistema
-                document.getElementById('sys-host').innerText = data.sistema.host;
-                document.getElementById('sys-so').innerText = data.sistema.so;
-                document.getElementById('sys-plat').innerText = data.sistema.plataforma;
-                document.getElementById('sys-arch').innerText = data.sistema.arquitetura;
-                document.getElementById('sys-release').innerText = data.sistema.release;
-
-                // Atualiza Memória
-                document.getElementById('mem-total').innerText = `${data.memoria.totalGB} GB`;
-                document.getElementById('mem-usada').innerText = `${data.memoria.usadaGB} GB`;
-                document.getElementById('mem-livre').innerText = `${data.memoria.livreGB} GB`;
-                document.getElementById('mem-percent').innerText = `${data.memoria.usoPercent}%`;
-
-                // Atualiza CPU
-                document.getElementById('cpu-modelo').innerText = data.cpu.modelo;
-                document.getElementById('cpu-nucleos').innerText = data.cpu.nucleos;
-                document.getElementById('cpu-load').innerText = data.cpu.loadAvg[0];
-
-                // Atualiza Rede
-                document.getElementById('net-ip').innerText = data.rede.ipPrincipal;
-                document.getElementById('net-ifaces').innerText = data.rede.interfacesTotal;
-                document.getElementById('io-arquivos').innerText = data.arquivosTotais;
-
-                // Atualiza Aplicação
-                document.getElementById('app-pid').innerText = data.aplicacao.pid;
-                document.getElementById('app-node').innerText = data.aplicacao.versaoNode;
-                document.getElementById('app-port').innerText = data.aplicacao.porta;
-                document.getElementById('app-dir').innerText = data.aplicacao.diretorio;
-                document.getElementById('app-user').innerText = data.usuario.username || 'N/A';
-
-            } catch (error) {
-                console.error("Erro ao conectar com a API:", error);
-                document.getElementById('top-status').innerText = "ERRO DE CONEXÃO";
-                document.getElementById('top-status').style.color = "red";
-            }
-        }
-
-        // Chama a função imediatamente ao abrir a página
-        buscarDadosSO();
-
-        // Atualiza os dados a cada 5 segundos automaticamente
-        setInterval(buscarDadosSO, 5000);
-    </script>
-</body>
-</html>
+        <div class="card simulator-card">
+            <h2>🧪 Módulo Avançado: Simulador de Kernel (Escalonador e Memória)</h2>
+            <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px;">Simulação isolada de alocação de memória RAM (Total: 8GB) e liberação de processos no tempo (Uso de CPU).</p>
+            
+            <div class="ram-bar-container">
+                <div class="ram-bar-fill" id="sim-ram-fill"></div>
+                <div class="ram-text" id="sim-ram-text">0.
