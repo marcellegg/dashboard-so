@@ -260,4 +260,147 @@
             
             <div class="ram-bar-container">
                 <div class="ram-bar-fill" id="sim-ram-fill"></div>
-                <div class="ram-text" id="sim-ram-text">0.
+                <div class="ram-text" id="sim-ram-text">0.00GB / 8.00GB Usados</div>
+            </div>
+
+            <div class="sim-controls">
+                <button class="btn-sim" onclick="spawnProcess()">+ Criar Novo Processo (App)</button>
+                <button class="btn-sim btn-kill" onclick="killRandomProcess()">- Encerrar Processo (Kill)</button>
+            </div>
+
+            <div class="process-list" id="sim-process-list">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // PARTE 1: DASHBOARD REAL (Dados do Node.js)
+        // ==========================================
+        async function buscarDadosSO() {
+            try {
+                const response = await fetch('/api/sysinfo');
+                const data = await response.json();
+
+                document.getElementById('top-status').innerText = data.aplicacao.status.toUpperCase();
+                document.getElementById('top-ram').innerText = `${data.memoria.usoPercent}%`;
+                document.getElementById('top-uptime').innerText = data.tempo.uptimeFormatado;
+
+                document.getElementById('sys-host').innerText = data.sistema.host;
+                document.getElementById('sys-so').innerText = data.sistema.so;
+                document.getElementById('sys-plat').innerText = data.sistema.plataforma;
+                document.getElementById('sys-arch').innerText = data.sistema.arquitetura;
+                document.getElementById('sys-release').innerText = data.sistema.release;
+
+                document.getElementById('mem-total').innerText = `${data.memoria.totalGB} GB`;
+                document.getElementById('mem-usada').innerText = `${data.memoria.usadaGB} GB`;
+                document.getElementById('mem-livre').innerText = `${data.memoria.livreGB} GB`;
+                document.getElementById('mem-percent').innerText = `${data.memoria.usoPercent}%`;
+
+                document.getElementById('cpu-modelo').innerText = data.cpu.modelo;
+                document.getElementById('cpu-nucleos').innerText = data.cpu.nucleos;
+                document.getElementById('cpu-load').innerText = data.cpu.loadAvg[0];
+
+                document.getElementById('net-ip').innerText = data.rede.ipPrincipal;
+                document.getElementById('app-pid').innerText = data.aplicacao.pid;
+                document.getElementById('app-node').innerText = data.aplicacao.versaoNode;
+                document.getElementById('app-port').innerText = data.aplicacao.porta;
+                document.getElementById('app-dir').innerText = data.aplicacao.diretorio;
+
+            } catch (error) {
+                console.error("Erro ao conectar com a API:", error);
+            }
+        }
+
+        buscarDadosSO();
+        setInterval(buscarDadosSO, 5000);
+
+        // ==========================================
+        // PARTE 2: SIMULADOR DE SO (Proposta Avançada)
+        // ==========================================
+        const TOTAL_RAM = 8.0; 
+        let usedSimRam = 0;
+        let processes = [];
+        let processIdCounter = 1000;
+        const processNames = ["chrome.exe", "node.js (servidor)", "vscode.exe", "mysql_daemon", "system32", "render_agent"];
+
+        function updateSimUI() {
+            const percent = (usedSimRam / TOTAL_RAM) * 100;
+            const fillBar = document.getElementById('sim-ram-fill');
+            fillBar.style.width = `${Math.min(percent, 100)}%`;
+            
+            if (percent > 85) fillBar.classList.add('danger');
+            else fillBar.classList.remove('danger');
+
+            document.getElementById('sim-ram-text').innerText = `${usedSimRam.toFixed(2)}GB / ${TOTAL_RAM.toFixed(2)}GB Alocados`;
+
+            const list = document.getElementById('sim-process-list');
+            list.innerHTML = '';
+            
+            if (processes.length === 0) {
+                list.innerHTML = '<div style="color: #666; font-style: italic; padding: 10px 0;">Nenhum processo ativo no momento. Memória livre.</div>';
+            }
+
+            processes.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'process-item';
+                div.innerHTML = `
+                    <span style="flex: 2;">⚙️ <strong>${p.name}</strong> (PID: ${p.id})</span> 
+                    <span style="flex: 1; color: var(--accent-blue);">📦 ${p.ram.toFixed(2)} GB</span> 
+                    <span style="flex: 1; text-align: right; color: var(--accent-green);">⏱️ Conclui em ${p.timeLeft}s</span>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function spawnProcess() {
+            // Requisita memória aleatória entre 0.5 e 2.5 GB
+            const ramNeeded = Math.random() * 2.0 + 0.5; 
+            
+            // Verifica se o SO tem memória livre para alocar (Evita OOM)
+            if (usedSimRam + ramNeeded > TOTAL_RAM) {
+                alert("🔴 OUT OF MEMORY (OOM)! O Kernel bloqueou a criação do processo pois não há memória RAM física suficiente.");
+                return;
+            }
+            
+            const p = {
+                id: processIdCounter++,
+                name: processNames[Math.floor(Math.random() * processNames.length)],
+                ram: ramNeeded,
+                timeLeft: Math.floor(Math.random() * 15) + 5 // Tempo de CPU: 5 a 20 segundos
+            };
+            
+            processes.push(p);
+            usedSimRam += ramNeeded;
+            updateSimUI();
+        }
+
+        function killRandomProcess() {
+            if (processes.length === 0) return;
+            // O Kernel encerra um processo e faz a liberação (Garbage Collection/Free) da RAM
+            const index = Math.floor(Math.random() * processes.length);
+            usedSimRam -= processes[index].ram;
+            processes.splice(index, 1);
+            updateSimUI();
+        }
+
+        // Loop de Relógio do SO (Tick)
+        setInterval(() => {
+            let changed = false;
+            for (let i = processes.length - 1; i >= 0; i--) {
+                processes[i].timeLeft--;
+                if (processes[i].timeLeft <= 0) {
+                    // Processo terminou a execução natural, libera a memória
+                    usedSimRam -= processes[i].ram;
+                    processes.splice(i, 1);
+                    changed = true;
+                }
+            }
+            updateSimUI();
+        }, 1000);
+
+        // Inicia o simulador com estado zerado
+        updateSimUI();
+    </script>
+</body>
+</html>
