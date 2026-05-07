@@ -1,386 +1,241 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SO Dashboard 2.0</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cloud OS App</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #a0a0a0;
+            --accent-green: #00e676;
+            --accent-blue: #29b6f6;
+            --border-color: #333333;
+        }
 
-    :root {
-      --bg:      #f0f2f5;
-      --surface: #ffffff;
-      --border:  #e2e6ea;
-      --text:    #1a202c;
-      --muted:   #718096;
-      --blue:    #3b82f6;
-      --green:   #10b981;
-      --yellow:  #f59e0b;
-      --red:     #ef4444;
-      --purple:  #8b5cf6;
-      --mono:    'IBM Plex Mono', monospace;
-      --sans:    'Outfit', sans-serif;
-    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+        }
 
-    /* ── HEADER ── */
-    .header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
 
-    .logo { display: flex; align-items: center; gap: 10px; }
-    .logo-bar { width: 4px; height: 30px; background: linear-gradient(180deg,#cc0000,#1a202c); border-radius: 2px; }
-    .logo-text { font-size: .95rem; font-weight: 700; }
-    .logo-text small { display: block; font-size: .62rem; font-weight: 300; color: var(--muted); letter-spacing: .4px; }
+        .header-title h1 {
+            font-size: 24px;
+            color: var(--accent-blue);
+        }
 
-    .header-right { display: flex; align-items: center; gap: 12px; }
-    .ts { font-family: var(--mono); font-size: .68rem; color: var(--muted); }
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 5px;
+        }
 
-    .btn {
-      background: var(--blue); color: #fff; border: none;
-      padding: 7px 16px; border-radius: 6px;
-      font-family: var(--mono); font-size: .7rem;
-      cursor: pointer; transition: opacity .15s;
-    }
-    .btn:hover { opacity: .85; }
+        .top-metrics {
+            display: flex;
+            gap: 20px;
+        }
 
-    /* ── SUMMARY BAR ── */
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      background: var(--border);
-      gap: 1px;
-      border-bottom: 1px solid var(--border);
-    }
+        .metric-badge {
+            background-color: var(--card-bg);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
 
-    @media (max-width: 900px) { .summary { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 500px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+        .metric-badge span {
+            display: block;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
 
-    .sum-cell {
-      background: var(--surface);
-      padding: 14px 16px;
-      text-align: center;
-    }
+        .metric-badge strong {
+            font-size: 20px;
+            color: var(--accent-green);
+        }
 
-    .sum-label { font-size: .62rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
-    .sum-val   { font-size: 1.45rem; font-weight: 700; line-height: 1; }
-    .sum-val.sm { font-size: 1rem; }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
 
-    .badge {
-      display: inline-block; padding: 3px 12px; border-radius: 999px;
-      font-size: .72rem; font-weight: 700; letter-spacing: .4px;
-    }
-    .badge.normal { background: #d1fae5; color: #065f46; }
-    .badge.alerta { background: #fef3c7; color: #92400e; }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
 
-    /* ── GRID ── */
-    .main { padding: 18px 20px 40px; }
+        .card h2 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 14px;
-    }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
 
-    /* ── CARD ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 18px;
-      animation: up .35s ease both;
-      transition: box-shadow .2s;
-    }
-    .card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.08); }
+        .info-row span:first-child {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
 
-    .card:nth-child(1){animation-delay:.04s}
-    .card:nth-child(2){animation-delay:.08s}
-    .card:nth-child(3){animation-delay:.12s}
-    .card:nth-child(4){animation-delay:.16s}
-    .card:nth-child(5){animation-delay:.20s}
-    .card:nth-child(6){animation-delay:.24s}
-    .card:nth-child(7){animation-delay:.28s}
-    .card:nth-child(8){animation-delay:.32s}
-    .card:nth-child(9){animation-delay:.36s}
+        .info-row span:last-child {
+            font-family: monospace;
+            color: #d4d4d4;
+        }
 
-    .card-head {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 14px; padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
-    }
-    .card-icon  { font-size: 1rem; }
-    .card-title { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
-
-    /* ── KEY-VALUE ── */
-    .kv { display: flex; flex-direction: column; gap: 7px; }
-
-    .kv-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; font-size: .78rem; }
-    .kv-key { color: var(--muted); white-space: nowrap; flex-shrink: 0; }
-    .kv-val { font-family: var(--mono); font-size: .72rem; text-align: right; word-break: break-all; }
-
-    .kv-val.blue   { color: var(--blue);   font-weight: 600; }
-    .kv-val.green  { color: var(--green);  font-weight: 600; }
-    .kv-val.yellow { color: var(--yellow); font-weight: 600; }
-    .kv-val.purple { color: var(--purple); font-weight: 600; }
-
-    .hint { margin-top: 10px; font-size: .66rem; color: var(--muted); font-style: italic; }
-
-    /* ── PROGRESS BAR ── */
-    .bar-wrap { background: #e5e7eb; border-radius: 999px; height: 7px; margin-top: 10px; overflow: hidden; }
-    .bar-fill  { height: 100%; border-radius: 999px; transition: width 1s ease; }
-    .bar-fill.blue   { background: linear-gradient(90deg, var(--blue),   #60a5fa); }
-    .bar-fill.green  { background: linear-gradient(90deg, var(--green),  #34d399); }
-    .bar-fill.yellow { background: linear-gradient(90deg, var(--yellow), #fbbf24); }
-    .bar-fill.red    { background: linear-gradient(90deg, var(--red),    #f87171); }
-
-    .bar-pct { text-align: center; font-family: var(--mono); font-size: .7rem; color: var(--muted); margin-top: 5px; }
-
-    /* ── CPU CORES ── */
-    .cores { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
-    .core-row { display: flex; align-items: center; gap: 8px; font-size: .7rem; }
-    .core-label { color: var(--muted); width: 52px; flex-shrink: 0; }
-    .core-bar   { flex: 1; background: #e5e7eb; border-radius: 999px; height: 5px; overflow: hidden; }
-    .core-fill  { height: 100%; border-radius: 999px; background: var(--blue); transition: width 1s ease; }
-    .core-pct   { font-family: var(--mono); font-size: .68rem; width: 30px; text-align: right; }
-
-    /* ── TABLES ── */
-    .tbl { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    .tbl th { text-align: left; color: var(--muted); font-size: .62rem; text-transform: uppercase; letter-spacing: .5px; padding: 4px 6px; border-bottom: 1px solid var(--border); }
-    .tbl td { padding: 5px 6px; font-family: var(--mono); font-size: .68rem; border-bottom: 1px solid #f3f4f6; }
-
-    /* ── FOOTER ── */
-    .footer { text-align: center; padding: 18px; font-family: var(--mono); font-size: .68rem; color: var(--muted); border-top: 1px solid var(--border); margin-top: 4px; }
-
-    /* ── ANIMATIONS ── */
-    @keyframes up {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+        .status-normal {
+            color: var(--accent-green) !important;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="logo">
-    <div class="logo-bar"></div>
-    <div class="logo-text">
-      SO Dashboard <span style="color:var(--blue)">2.0</span>
-      <small>Sistemas Operacionais · Cloud Computing · FATEC</small>
+    <header>
+        <div class="header-title">
+            <h1>Cloud OS Dashboard</h1>
+            <p>FATEC Itapetininga | Desenv. por Marcelle de Goes Silva</p>
+        </div>
+        <div class="top-metrics">
+            <div class="metric-badge">
+                <span>Status</span>
+                <strong class="status-normal" id="top-status">CARREGANDO...</strong>
+            </div>
+            <div class="metric-badge">
+                <span>RAM Usada</span>
+                <strong id="top-ram">0%</strong>
+            </div>
+            <div class="metric-badge">
+                <span>Uptime</span>
+                <strong id="top-uptime">0d 0h 0m</strong>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <h2>🖥️ Sistema</h2>
+            <div class="info-row"><span>Host:</span> <span id="sys-host">...</span></div>
+            <div class="info-row"><span>SO:</span> <span id="sys-so">...</span></div>
+            <div class="info-row"><span>Plataforma:</span> <span id="sys-plat">...</span></div>
+            <div class="info-row"><span>Arquitetura:</span> <span id="sys-arch">...</span></div>
+            <div class="info-row"><span>Release:</span> <span id="sys-release">...</span></div>
+        </div>
+
+        <div class="card">
+            <h2>🧠 Memória RAM</h2>
+            <div class="info-row"><span>Total:</span> <span id="mem-total">...</span></div>
+            <div class="info-row"><span>Usada:</span> <span id="mem-usada">...</span></div>
+            <div class="info-row"><span>Livre:</span> <span id="mem-livre">...</span></div>
+            <div class="info-row"><span>Uso (%):</span> <span id="mem-percent">...</span></div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Processamento (CPU)</h2>
+            <div class="info-row"><span>Modelo:</span> <span id="cpu-modelo">...</span></div>
+            <div class="info-row"><span>Núcleos:</span> <span id="cpu-nucleos">...</span></div>
+            <div class="info-row"><span>Load Avg (1m):</span> <span id="cpu-load">...</span></div>
+        </div>
+
+        <div class="card">
+            <h2>🌐 Rede & IO</h2>
+            <div class="info-row"><span>IP Principal:</span> <span id="net-ip">...</span></div>
+            <div class="info-row"><span>Interfaces Ativas:</span> <span id="net-ifaces">...</span></div>
+            <div class="info-row"><span>Arquivos no Dir:</span> <span id="io-arquivos">...</span></div>
+        </div>
+
+        <div class="card">
+            <h2>📦 Ambiente da Aplicação</h2>
+            <div class="info-row"><span>PID do Processo:</span> <span id="app-pid">...</span></div>
+            <div class="info-row"><span>Versão Node:</span> <span id="app-node">...</span></div>
+            <div class="info-row"><span>Porta de Rede:</span> <span id="app-port">...</span></div>
+            <div class="info-row"><span>Diretório:</span> <span id="app-dir">...</span></div>
+            <div class="info-row"><span>Usuário do SO:</span> <span id="app-user">...</span></div>
+        </div>
     </div>
-  </div>
-  <div class="header-right">
-    <span class="ts" id="ts">—</span>
-    <button class="btn" onclick="load()">↻ Atualizar</button>
-  </div>
-</header>
 
-<!-- SUMMARY BAR -->
-<div class="summary">
-  <div class="sum-cell"><div class="sum-label">RAM</div><div class="sum-val" id="s-ram">—</div></div>
-  <div class="sum-cell"><div class="sum-label">CPU Média</div><div class="sum-val" id="s-cpu">—</div></div>
-  <div class="sum-cell"><div class="sum-label">Uptime</div><div class="sum-val sm" id="s-uptime">—</div></div>
-  <div class="sum-cell"><div class="sum-label">Arquivos</div><div class="sum-val" id="s-files">—</div></div>
-  <div class="sum-cell"><div class="sum-label">IP Principal</div><div class="sum-val sm" id="s-ip">—</div></div>
-  <div class="sum-cell"><div class="sum-label">Status</div><div class="sum-val" id="s-status">—</div></div>
-</div>
+    <script>
+        async function buscarDadosSO() {
+            try {
+                const response = await fetch('/api/sysinfo');
+                const data = await response.json();
 
-<main class="main">
-  <div class="grid" id="grid"></div>
-  <div class="footer">SO Dashboard 2.0 &nbsp;•&nbsp; Sistemas Operacionais + Cloud Computing &nbsp;•&nbsp; FATEC</div>
-</main>
+                // Atualiza Header
+                document.getElementById('top-status').innerText = data.aplicacao.status.toUpperCase();
+                document.getElementById('top-ram').innerText = `${data.memoria.usoPercent}%`;
+                document.getElementById('top-uptime').innerText = data.tempo.uptimeFormatado;
 
-<script>
-  function barColor(pct) {
-    return pct < 60 ? 'green' : pct < 80 ? 'yellow' : 'red';
-  }
+                // Atualiza Sistema
+                document.getElementById('sys-host').innerText = data.sistema.host;
+                document.getElementById('sys-so').innerText = data.sistema.so;
+                document.getElementById('sys-plat').innerText = data.sistema.plataforma;
+                document.getElementById('sys-arch').innerText = data.sistema.arquitetura;
+                document.getElementById('sys-release').innerText = data.sistema.release;
 
-  function kv(key, val, cls = '') {
-    return `<div class="kv-row">
-      <span class="kv-key">${key}</span>
-      <span class="kv-val ${cls}">${val}</span>
-    </div>`;
-  }
+                // Atualiza Memória
+                document.getElementById('mem-total').innerText = `${data.memoria.totalGB} GB`;
+                document.getElementById('mem-usada').innerText = `${data.memoria.usadaGB} GB`;
+                document.getElementById('mem-livre').innerText = `${data.memoria.livreGB} GB`;
+                document.getElementById('mem-percent').innerText = `${data.memoria.usoPercent}%`;
 
-  function bar(pct) {
-    const c = barColor(pct);
-    return `<div class="bar-wrap"><div class="bar-fill ${c}" style="width:${pct}%"></div></div>
-            <div class="bar-pct">${pct}%</div>`;
-  }
+                // Atualiza CPU
+                document.getElementById('cpu-modelo').innerText = data.cpu.modelo;
+                document.getElementById('cpu-nucleos').innerText = data.cpu.nucleos;
+                document.getElementById('cpu-load').innerText = data.cpu.loadAvg[0];
 
-  async function load() {
-    try {
-      const res = await fetch('/api/sysinfo');
-      if (!res.ok) throw new Error('Falha na requisição');
-      const d = await res.json();
+                // Atualiza Rede
+                document.getElementById('net-ip').innerText = data.rede.ipPrincipal;
+                document.getElementById('net-ifaces').innerText = data.rede.interfacesTotal;
+                document.getElementById('io-arquivos').innerText = data.arquivosTotais;
 
-      // Timestamp
-      document.getElementById('ts').textContent = d.tempo.local;
+                // Atualiza Aplicação
+                document.getElementById('app-pid').innerText = data.aplicacao.pid;
+                document.getElementById('app-node').innerText = data.aplicacao.versaoNode;
+                document.getElementById('app-port').innerText = data.aplicacao.porta;
+                document.getElementById('app-dir').innerText = data.aplicacao.diretorio;
+                document.getElementById('app-user').innerText = data.usuario.username || 'N/A';
 
-      // Summary
-      const rc = d.summary.ram  >= 80 ? 'red' : d.summary.ram  >= 60 ? 'yellow' : 'green';
-      const cc = d.summary.cpuAvg >= 80 ? 'red' : d.summary.cpuAvg >= 60 ? 'yellow' : 'green';
-      document.getElementById('s-ram').innerHTML    = `<span style="color:var(--${rc})">${d.summary.ram}%</span>`;
-      document.getElementById('s-cpu').innerHTML    = `<span style="color:var(--${cc})">${d.summary.cpuAvg}%</span>`;
-      document.getElementById('s-uptime').textContent = d.summary.uptime;
-      document.getElementById('s-files').textContent  = d.summary.fileCount;
-      document.getElementById('s-ip').textContent     = d.summary.mainIP;
-      document.getElementById('s-status').innerHTML   =
-        `<span class="badge ${d.summary.status === 'NORMAL' ? 'normal' : 'alerta'}">${d.summary.status}</span>`;
+            } catch (error) {
+                console.error("Erro ao conectar com a API:", error);
+                document.getElementById('top-status').innerText = "ERRO DE CONEXÃO";
+                document.getElementById('top-status').style.color = "red";
+            }
+        }
 
-      // Cores HTML
-      const coresHtml = d.cpu.cores.map(c =>
-        `<div class="core-row">
-          <span class="core-label">Core ${c.core}</span>
-          <div class="core-bar"><div class="core-fill" style="width:${c.usage}%"></div></div>
-          <span class="core-pct">${c.usage}%</span>
-        </div>`
-      ).join('');
+        // Chama a função imediatamente ao abrir a página
+        buscarDadosSO();
 
-      // Network table
-      const netRows = d.rede.lista.map(n =>
-        `<tr><td>${n.iface}</td><td>${n.ip}</td><td>${n.family}</td></tr>`
-      ).join('');
-
-      // Files table
-      const fileRows = d.arquivos.lista.map(f =>
-        `<tr><td>${f.name}</td><td>${f.type}</td><td>${f.size}</td></tr>`
-      ).join('');
-
-      document.getElementById('grid').innerHTML = `
-
-        <!-- 1. SISTEMA -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">📌</span><span class="card-title">Sistema</span></div>
-          <div class="kv">
-            ${kv('Host:',        d.sistema.hostname,   'blue')}
-            ${kv('SO:',          d.sistema.so)}
-            ${kv('Release:',     d.sistema.release)}
-            ${kv('Plataforma:',  d.sistema.platform)}
-            ${kv('Arquitetura:', d.sistema.arch)}
-            ${kv('Endianness:',  d.sistema.endianness)}
-            ${kv('Node:',        d.sistema.node, 'purple')}
-          </div>
-          <p class="hint">Hostname = nome da máquina</p>
-        </div>
-
-        <!-- 2. USUÁRIO -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">👤</span><span class="card-title">Usuário</span></div>
-          <div class="kv">
-            ${kv('Usuário:', d.usuario.user,  'blue')}
-            ${kv('Home:',    d.usuario.home)}
-            ${kv('Temp:',    d.usuario.tmp)}
-            ${kv('Shell:',   d.usuario.shell)}
-            ${kv('UID:',     d.usuario.uid)}
-            ${kv('GID:',     d.usuario.gid)}
-          </div>
-        </div>
-
-        <!-- 3. MEMÓRIA RAM -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">🧠</span><span class="card-title">Memória RAM</span></div>
-          <div class="kv">
-            ${kv('Total:',   d.memoria.total + ' GB')}
-            ${kv('Usada:',   d.memoria.usada + ' GB', 'yellow')}
-            ${kv('Livre:',   d.memoria.livre + ' GB', 'green')}
-            ${kv('Por CPU:', d.memoria.porCpu + ' GB')}
-          </div>
-          ${bar(d.memoria.pct)}
-          <p class="hint">RAM = memória principal usada pelos processos</p>
-        </div>
-
-        <!-- 4. CPU -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">⚙️</span><span class="card-title">CPU</span></div>
-          <div class="kv">
-            ${kv('Núcleos:', d.cpu.nucleos, 'blue')}
-            ${kv('Modelo:',  d.cpu.modelo)}
-            ${kv('Load Avg:',d.cpu.loadAvg)}
-          </div>
-          <p class="hint" style="margin-bottom:6px">Load Avg = processos aguardando CPU</p>
-          <div class="cores">${coresHtml}</div>
-        </div>
-
-        <!-- 5. REDE -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">🌐</span><span class="card-title">Rede</span></div>
-          <div class="kv">
-            ${kv('IP Principal:', d.rede.mainIP,     'blue')}
-            ${kv('Interfaces:',   d.rede.interfaces)}
-          </div>
-          <table class="tbl">
-            <thead><tr><th>IF</th><th>IP</th><th>Família</th></tr></thead>
-            <tbody>${netRows}</tbody>
-          </table>
-        </div>
-
-        <!-- 6. ARQUIVOS -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">📁</span><span class="card-title">Arquivos</span></div>
-          <table class="tbl">
-            <thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th></tr></thead>
-            <tbody>${fileRows}</tbody>
-          </table>
-        </div>
-
-        <!-- 7. TEMPO -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">⏱️</span><span class="card-title">Tempo</span></div>
-          <div class="kv">
-            ${kv('Uptime:',   d.tempo.uptime,   'yellow')}
-            ${kv('Timezone:', d.tempo.timezone)}
-            ${kv('ISO:',      d.tempo.iso)}
-          </div>
-          <p class="hint">Uptime = tempo desde inicialização</p>
-        </div>
-
-        <!-- 8. APLICAÇÃO -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">🔒</span><span class="card-title">Aplicação</span></div>
-          <div class="kv">
-            ${kv('PID:',          d.aplicacao.pid,      'blue')}
-            ${kv('Diretório:',    d.aplicacao.dir)}
-            ${kv('Memória Node:', d.aplicacao.memNode,  'green')}
-            ${kv('Exec Path:',    d.aplicacao.execPath)}
-            ${kv('Porta:',        d.aplicacao.port)}
-          </div>
-        </div>
-
-        <!-- 9. AMBIENTE -->
-        <div class="card">
-          <div class="card-head"><span class="card-icon">☁️</span><span class="card-title">Ambiente</span></div>
-          <div class="kv">
-            ${kv('Status:',     d.ambiente.status,    'green')}
-            ${kv('PORT:',       d.ambiente.port)}
-            ${kv('NODE_ENV:',   d.ambiente.nodeEnv,   'purple')}
-            ${kv('Kernel AWS:', d.ambiente.kernelAws)}
-          </div>
-        </div>
-      `;
-
-    } catch (e) {
-      document.getElementById('grid').innerHTML =
-        `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--red);font-family:var(--mono)">
-          ❌ Erro ao carregar dados: ${e.message}
-        </div>`;
-    }
-  }
-
-  load();
-  setInterval(load, 10000); // atualiza a cada 10s
-</script>
+        // Atualiza os dados a cada 5 segundos automaticamente
+        setInterval(buscarDadosSO, 5000);
+    </script>
 </body>
 </html>
